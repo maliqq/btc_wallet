@@ -1,29 +1,49 @@
-require 'em/pure_ruby' # FIXME
-require 'bitcoin'
+require "dotenv"
+require "pp"
+require "pry"
+require "colorize"
+
+Dotenv.load(".env.local", ".env")
+
+require "btc_wallet"
 
 module BtwWallet
   class Main < Thor
+    include Thor::Actions
+
     namespace :btc
 
-    desc 'create', 'Create a test sBTC address'
+    desc "create", "Create a test address"
     def create
-      Bitcoin.chain_params = :testnet
-      key = Bitcoin::Key.generate
+      wallet = BtcWallet::Wallet.create_default!
 
-      name = `whoami`.strip
-
-      File.write("priv/#{name}.wif", key.to_wif)
-      FileUtils.chmod(0600, "priv/#{name}.wif")
-      File.write("priv/#{name}.pub", key.pubkey)
-      FileUtils.chmod(0644, "priv/#{name}.pub")
+      puts "Signet address: #{wallet.address}"
     end
 
-    desc 'balance', 'Show current balance in sBTC'
+    desc "address", "Address of your wallet"
+    def address
+      wallet = BtcWallet::Wallet.load_default!
+
+      puts "Your address: #{wallet.address}"
+    end
+
+    desc "balance", "Show current balance in sats for a wallet"
     def balance
+      wallet = BtcWallet::Wallet.load_default!
+
+      puts "Balance for #{wallet.address}: #{wallet.balance}"
     end
 
-    desc 'send', 'Send amount to specific sBTC address'
-    def send(address, amount)
+    desc "send ADDRESS --amount <amount>", "Send amount to specific address"
+    method_option :amount, aliases: "-n", type: :numeric, required: true, desc: "Amount in sats"
+    method_option :fee, type: :numeric, desc: "Amount fee in sats"
+    def send(to_address)
+      wallet = BtcWallet::Wallet.load_default!
+      tx = wallet.send_and_broadcast(to_address, options[:amount], options[:fee])
+
+      puts "Transaction ID: #{tx.txid}"
+    rescue ::BtcWallet::AmountTooSmall
+      puts "Amount is too small! Try another amount".red
     end
   end
 end

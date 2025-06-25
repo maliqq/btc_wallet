@@ -1,33 +1,79 @@
-# BtcWallet
+# Simplest BTC Wallet
 
-Welcome to your new gem! In this directory, you'll find the files you need to be able to package up your Ruby library into a gem. Put your Ruby code in the file `lib/btc_wallet`. To experiment with that code, run `bin/console` for an interactive prompt.
+A minimal Bitcoin wallet for the Bitcoin Signet network, supporting P2WPKH addresses, balance checking, and sending transactions with customizable fees.
 
-TODO: Delete this and the text above, and describe your gem
+---
 
-## Installation
+## Features
 
-Install the gem and add to the application's Gemfile by executing:
+- Generate and store a Bitcoin keypair (P2WPKH/bech32)
+- Check wallet balance using the [mempool.space](https://mempool.space/signet/) API
+- Send Bitcoin with fee control (proportional to transaction size)
+- Simple CLI via [Thor](https://github.com/erikhuda/thor)
+- Docker support for easy setup
 
-    $ bundle add btc_wallet
+---
 
-If bundler is not being used to manage dependencies, install the gem by executing:
+## Prerequisites
 
-    $ gem install btc_wallet
+- [Docker](https://www.docker.com/) and [Docker Compose](https://docs.docker.com/compose/)
+- Ruby (if running outside Docker)
 
-## Usage
+### Environment Variables
 
-TODO: Write usage instructions here
+You can modify these in your environment or `.env` file:
 
-## Development
+```
+BTC_WALLET_KEY_FILE=./priv/maliqq.key
+MEMPOOL_API_BASE_ADDR=https://mempool.space/signet/api/
+```
 
-After checking out the repo, run `bin/setup` to install dependencies. Then, run `rake test` to run the tests. You can also run `bin/console` for an interactive prompt that will allow you to experiment.
+---
 
-To install this gem onto your local machine, run `bundle exec rake install`. To release a new version, update the version number in `version.rb`, and then run `bundle exec rake release`, which will create a git tag for the version, push git commits and the created tag, and push the `.gem` file to [rubygems.org](https://rubygems.org).
+## Getting Started
 
-## Contributing
+### 1. Start the Shell
 
-Bug reports and pull requests are welcome on GitHub at https://github.com/[USERNAME]/btc_wallet.
+Open a shell in the app container:
 
-## License
+```sh
+docker compose run --rm app bash
+```
 
-The gem is available as open source under the terms of the [MIT License](https://opensource.org/licenses/MIT).
+### 2. Create a BTC Keypair
+
+Generate a new P2WPKH (bech32) keypair:
+
+```sh
+bin/thor btc:create
+```
+
+This will save your private key to the path specified by `BTC_WALLET_KEY_FILE`.
+
+### 3. Check Wallet Balance
+
+Check your wallet's balance on the Signet network:
+
+```sh
+bin/thor btc:balance
+```
+
+### 4. Send Bitcoin
+
+Send a specified amount (in satoshis) to a given address. You can optionally specify a fee (in sats):
+
+```sh
+bin/thor btc:send tb1... --amount <amount in sats> [--fee <fee in sats>]
+```
+
+If `--fee` is not specified, the wallet will estimate a proportional fee based on transaction size and a default fee rate.
+
+---
+
+## Notes
+
+- This wallet is intended for educational and testing purposes on the Bitcoin Signet network.
+- **Do not use with mainnet funds.**
+- Make sure to back up your private key file securely.
+
+---

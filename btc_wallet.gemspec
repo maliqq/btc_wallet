@@ -36,6 +36,9 @@ Gem::Specification.new do |spec|
   spec.add_dependency "thor"
   spec.add_dependency "dotenv"
   spec.add_dependency "bitcoinrb"
+  spec.add_dependency "activesupport"
+  spec.add_dependency "rest-client"
+  spec.add_dependency "colorize"
 
   # For more information and examples about making a new gem, check out our
   # guide at: https://bundler.io/guides/creating_gem.html
